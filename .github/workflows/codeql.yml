@@ -44,18 +44,22 @@ jobs:
 
     - name: Build GMS Variant
       if: matrix.build-mode == 'manual'
-      working-directory: ./project 
       shell: bash
       run: |
-        echo "Forcing a single-process build for CodeQL tracing..."
+        cd project
         chmod +x gradlew
         
-        # We disable caching, parallel execution, and the daemon
-        # This forces the Kotlin/Java compilers to run where CodeQL can see them
-        ./gradlew clean assembleGmsDebug \
+        echo "Forcing compilers to run in the foreground..."
+        
+        # 1. We use 'compileGmsDebugJavaWithJavac' and 'compileGmsDebugKotlin' 
+        #    to target the compilers directly.
+        # 2. We set multiple flags to keep everything in one process.
+        ./gradlew clean compileGmsDebugJavaWithJavac compileGmsDebugKotlin \
           --no-daemon \
           --no-build-cache \
           -Dorg.gradle.parallel=false \
+          -Dorg.gradle.vfs.watch=false \
+          -Dkotlin.compiler.execution.strategy="in-process" \
           -Dandroid.suppressUnsupportedCompileSdk=36
         
         echo "GMS Build complete."
