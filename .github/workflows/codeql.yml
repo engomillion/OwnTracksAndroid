@@ -42,6 +42,10 @@ jobs:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
 
+        # This tells CodeQL to look for style issues, common bugs, and quality alerts
+        # in addition to critical security vulnerabilities.
+        queries: security-extended,security-and-quality
+
     - name: Build GMS Variant
       if: matrix.build-mode == 'manual'
       shell: bash
