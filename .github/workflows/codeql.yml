@@ -44,20 +44,18 @@ jobs:
 
     - name: Build GMS Variant
       if: matrix.build-mode == 'manual'
+      # This is the key: tell the whole step to run inside 'project'
+      working-directory: ./project 
       shell: bash
       run: |
         echo "Starting manual build for Google Play (GMS) variant..."
-        echo "Moving into the project directory..."
-        
-        # Navigate to the folder containing gradlew
-        cd project 
-        
-        echo "Using JDK 21 and suppressing compileSdk 36 warnings."
-        
         chmod +x gradlew
-        ./gradlew assembleGmsDebug -Dandroid.suppressUnsupportedCompileSdk=36
         
-        echo "GMS Build complete. Proceeding to CodeQL analysis."
+        # 'clean' forces a recompile so the CodeQL tracer can 'see' the files
+        # '--no-daemon' ensures the build happens in this process, not a background one
+        ./gradlew clean assembleGmsDebug --no-daemon -Dandroid.suppressUnsupportedCompileSdk=36
+        
+        echo "GMS Build complete."
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
